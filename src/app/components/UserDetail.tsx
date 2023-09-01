@@ -4,6 +4,10 @@ import UserLabel from "./UserLabel";
 import ReplyButton from "./ReplyButton";
 import EditButton from "./EditButton";
 import DeleteButton from "./DeleteButton";
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+
+dayjs.extend(relativeTime)
 
 type UserDetailProps = {
   image: {
@@ -35,7 +39,7 @@ const UserDetail = (props: UserDetailProps) => {
   const image = props.image
   const username = props.username
   const currentUser = props.currentUser
-  const createdAt = props.createdAt
+  const createdAt = dayjs(props.createdAt).fromNow()
   const isCurrentUser = username == currentUser.username ? true : false
   const handleIsReplyingChange = props.onIsReplyingChange
   const isReplying = props.isReplying

@@ -70,6 +70,10 @@ const InputComment = (props: InputCommentProps) => {
     setCommentValue(e.target.value)
   }
 
+  const resetCommentValue = () => {
+    setCommentValue("")
+  }
+
   return (
     <div className={(action == "reply" ? "-mt-2 " : " ") + "bg-neutral-white p-4 flex flex-col md:flex-row gap-4 rounded-md"}>
       <div className='hidden md:block w-14 h-14'>
@@ -78,10 +82,10 @@ const InputComment = (props: InputCommentProps) => {
       <textarea className='border px-4 py-2 rounded-lg text-neutral-dark-blue md:w-full' placeholder='Add a comment...' value={commentValue} onChange={handleChangeCommentValue} />
       <div className='flex md:hidden gap-4 justify-between items-center'>
         <Avatar sourceImage={currentUser.image} username={currentUser.username} />
-        <ActionButton replyIdToReply={replyIdToReply} onReplyReply={onReplyReply} onIsReplyingChange={onIsReplyingChange} replyingTo={replyingTo} commentIdToReply={commentIdToReply} idToAdd={idToAdd} currentUser={currentUser} commentValue={commentValue} onReplyComment={onReplyComment} onAddComment={onAddComment} action={action} />
+        <ActionButton resetCommentValue={resetCommentValue} replyIdToReply={replyIdToReply} onReplyReply={onReplyReply} onIsReplyingChange={onIsReplyingChange} replyingTo={replyingTo} commentIdToReply={commentIdToReply} idToAdd={idToAdd} currentUser={currentUser} commentValue={commentValue} onReplyComment={onReplyComment} onAddComment={onAddComment} action={action} />
       </div>
       <div className='hidden md:block'>
-        <ActionButton replyIdToReply={replyIdToReply} onReplyReply={onReplyReply} onIsReplyingChange={onIsReplyingChange} replyingTo={replyingTo} commentIdToReply={commentIdToReply} idToAdd={idToAdd} currentUser={currentUser} commentValue={commentValue} onReplyComment={onReplyComment} onAddComment={onAddComment} action={action} />
+        <ActionButton resetCommentValue={resetCommentValue} replyIdToReply={replyIdToReply} onReplyReply={onReplyReply} onIsReplyingChange={onIsReplyingChange} replyingTo={replyingTo} commentIdToReply={commentIdToReply} idToAdd={idToAdd} currentUser={currentUser} commentValue={commentValue} onReplyComment={onReplyComment} onAddComment={onAddComment} action={action} />
       </div>
     </div>
   )
