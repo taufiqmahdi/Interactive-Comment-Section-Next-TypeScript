@@ -17,10 +17,11 @@ type ActionButtonProps = {
   onUpdateComment?: (updatedCommentContent: string, commentId: number) => void
   commentIdToUpdate?: number
   updatedCommentContent?: string
-  onIsEditingChange: () => void
+  onIsEditingChange?: () => void
   onUpdateReply?: (updatedReplyContent: string, replyId: number) => void
   replyIdToUpdate?: number
   updatedReplyContent?: string
+  resetCommentValue?: () => void
 };
 
 interface User {
@@ -74,6 +75,7 @@ const ActionButton = (props: ActionButtonProps) => {
   const onUpdateReply = props.onUpdateReply
   const replyIdToUpdate = props.replyIdToUpdate
   const updatedReplyContent = props.updatedReplyContent
+  const resetCommentValue = props.resetCommentValue
 
   const handleClick = () => {
     action === "send" ? onAddComment(newComment) : null
@@ -93,6 +95,7 @@ const ActionButton = (props: ActionButtonProps) => {
       action === "update" ? (onUpdateReply && updatedReplyContent ? onUpdateReply(updatedReplyContent, replyIdToUpdate) : null) : null
       onIsEditingChange ? onIsEditingChange() : null
     }
+    resetCommentValue ? resetCommentValue() : null
   };
 
   const newComment: Comment = {
