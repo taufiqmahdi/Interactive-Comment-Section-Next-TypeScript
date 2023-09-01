@@ -57,6 +57,12 @@ export default function Home() {
     setFirstLoading(false)
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.setItem("comments", JSON.stringify(comments));
+    }
+  }, [comments]);
+
   for (let index = 0; index < comments.length; index++) {
     if (comments[index].id > idToAdd) {
       setIdToAdd(comments[index].id);
