@@ -41,7 +41,7 @@ export default function Home() {
     let currentUserData, commentsData;
     if (typeof window !== "undefined" && window.localStorage) {
       if (
-        !localStorage.getItem("currentUser") &&
+        !localStorage.getItem("currentUser") ||
         !localStorage.getItem("comments")
       ) {
         // const res = require("./data/data.json");
@@ -78,6 +78,12 @@ export default function Home() {
         return;
       }
     }
+  }
+
+  const sortComments = () => {
+    const sortedComments = [...comments]
+    sortedComments.sort(function(a: Comment, b: Comment){return b.score - a.score})
+    setComments(sortedComments)
   }
 
   const handleAddComment = (newComment: Comment) => {
@@ -158,6 +164,7 @@ export default function Home() {
       })
 
       setComments(updateVote);
+      sortComments()
       setLoading(false)
     }, 2000);
   }
