@@ -1,113 +1,290 @@
-import Image from 'next/image'
+"use client";
+
+import Image from "next/image";
+import Comment from "./components/Comment";
+import Reply from "./components/Reply";
+import InputComment from "./components/InputComment";
+import UserDetail from "./components/UserDetail";
+import Vote from "./components/Vote";
+import ReplyButton from "./components/ReplyButton";
+import DeleteButton from "./components/DeleteButton";
+import EditButton from "./components/EditButton";
+import SendButton from "./components/ActionButton";
+import Avatar from "./components/Avatar";
+import Content from "./components/Content";
+import Attribution from "./components/Attribution";
+import Modal from "./components/DeleteModal";
+import { handleSave } from "./functions/handleSave";
+import handleLoad from "./functions/handleLoad";
+import { useEffect, useState } from "react";
+import data from './data/data.json'
+import { User } from "./interfaces/IUser";
+// import { handleUpdateReply } from "./functions/handleUpdateReply"
+
+function getData() {
+  const { currentUserData, commentsData } = handleLoad();
+
+  return { currentUserData, commentsData };
+}
 
 export default function Home() {
+  // const { currentUserData, commentsData } = getData();
+  // const [currentUser, setCurrentUser] = useState<User>(currentUserData);
+  const [currentUser, setCurrentUser] = useState<User>({} as User);
+  // const [comments, setComments] = useState<Comment[]>(commentsData);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [idToAdd, setIdToAdd] = useState(0);
+  const [isFirstLoading, setFirstLoading] = useState(true)
+  const [isLoading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let currentUserData, commentsData;
+    if (typeof window !== "undefined" && window.localStorage) {
+      if (
+        !localStorage.getItem("currentUser") &&
+        !localStorage.getItem("comments")
+      ) {
+        // const res = require("./data/data.json");
+        localStorage.setItem("currentUser", JSON.stringify(data.currentUser));
+        localStorage.setItem("comments", JSON.stringify(data.comments));
+      }
+      currentUserData = JSON.parse(localStorage.getItem("currentUser") ?? "{}");
+      commentsData = JSON.parse(localStorage.getItem("comments") ?? "{}");
+    }
+
+    setCurrentUser(currentUserData);
+    setComments(commentsData);
+    setFirstLoading(false)
+  }, []);
+
+  for (let index = 0; index < comments.length; index++) {
+    if (comments[index].id > idToAdd) {
+      setIdToAdd(comments[index].id);
+      return;
+    }
+    for (
+      let replyIndex = 0;
+      replyIndex < comments[index].replies.length;
+      replyIndex++
+    ) {
+      if (comments[index].replies[replyIndex].id > idToAdd) {
+        setIdToAdd(comments[index].replies[replyIndex].id);
+        return;
+      }
+    }
+  }
+
+  const handleAddComment = (newComment: Comment) => {
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments([...comments, newComment]);
+      setLoading(false)
+    }, 2000);
+  };
+
+  const handleReplyComment = (newReply: Reply, commentId: number) => {
+    const addReply = comments.map((comment) => {
+      if(comment.id === commentId) {
+        return {
+          ...comment,
+          replies: [
+            ...comment.replies,
+            newReply
+        ]}
+      } else {
+        return comment
+      }
+    })
+
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments(addReply);
+      setLoading(false)
+    }, 2000);
+  };
+
+  const handleUpdateComment = (updatedCommentContent: string, commentId: number) => {
+    const updateComment = comments.map((comment) => {
+      if(comment.id === commentId) {
+        return {
+          ...comment,
+          content: updatedCommentContent
+          }
+      } else {
+        return comment
+      }
+    })
+
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments(updateComment);
+      setLoading(false)
+    }, 2000);
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    const deleteComment = comments.filter((comment) => comment.id !== commentId)
+    setLoading(true)
+
+
+    setTimeout(() => {
+      setComments(deleteComment)
+      setLoading(false)
+    }, 2000);
+  }
+
+  const handleUpdateCommentVote = (commentId: number, operation: string) => {
+    setLoading(true)
+
+    setTimeout(() => {
+      const updateVote = comments.map((comment) => {
+        if(comment.id === commentId) {
+          return {
+            ...comment,
+            score: ((operation == 'add') ? (comment.score += 1) : (comment.score -= 1))
+          }
+        } else {
+          return comment
+        }
+      })
+
+      setComments(updateVote);
+      setLoading(false)
+    }, 2000);
+  }
+
+  const handleReplyReply = (newReply: Reply, replyId: number) => {
+    const EditComment = comments.map((comment) => {
+      let addReply = comment.replies;
+      comment.replies.map((reply) => {
+        if(reply.id === replyId) {
+          addReply = [...addReply, newReply];
+        }
+      })
+      return {
+        ...comment,
+        replies: addReply
+      }
+    })
+
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments(EditComment);
+      setLoading(false)
+    }, 2000);
+  };
+
+  const handleUpdateReply = (updatedReplyContent: string, replyId: number) => {
+    const EditComment = comments.map((comment) => {
+      const updateReply = comment.replies.map((reply) => {
+        if(reply.id === replyId) {
+          return {
+            ...reply,
+            content: updatedReplyContent
+          }
+        } else { 
+          return reply
+        }
+      })
+      return {
+        ...comment,
+        replies: updateReply
+      }
+    })
+
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments(EditComment);
+      setLoading(false)
+    }, 2000);
+  };
+
+  const handleDeleteReply = (replyId: number) => {
+    const updatedComments = comments.map((comment) => {
+      const updatedReplies = comment.replies.filter((reply) => reply.id !== replyId);
+      return { ...comment, replies: updatedReplies };
+    })
+
+    setLoading(true)
+
+    setTimeout(() => {
+      setComments(updatedComments)
+      setLoading(false)
+    }, 2000);
+  }
+
+  const handleUpdateReplyVote = (replyId: number, operation: string) => {
+    setLoading(true)
+
+    setTimeout(() => {
+      const updateVote = comments.map((comment) => {
+        // let replyToUpdate = comment.replies
+        const updateReplyVote = comment.replies.map((reply) => {
+          if(reply.id === replyId) {
+            return {
+              ...reply,
+              score: ((operation == 'add') ? (reply.score += 1) : (reply.score -= 1))
+            }
+          } else {
+            return reply
+          }
+        })
+        return {
+          ...comment,
+          replies: updateReplyVote
+        }
+      })
+
+      setComments(updateVote);
+      setLoading(false)
+    }, 2000);
+  }
+
+  if (isFirstLoading)
+    return (
+      <main className="animate-pulse max-w-2xl mx-auto p-4 md:pt-16 min-h-screen flex flex-col gap-4 relative items-center justify-center">
+        Loading...
+      </main>
+    );
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className="max-w-2xl mx-auto p-4 md:pt-16 min-h-screen flex flex-col gap-4 relative">
+      {comments?.map((value: Comment) => {
+        return (
+          <Comment
+            key={value.id}
+            currentUser={currentUser}
+            comment={value}
+            idToAdd={idToAdd}
+            onAddComment={handleAddComment}
+            onReplyComment={handleReplyComment}
+            onReplyReply={handleReplyReply}
+            onUpdateComment={handleUpdateComment}
+            onUpdateReply={handleUpdateReply}
+            onDeleteComment={handleDeleteComment}
+            onDeleteReply={handleDeleteReply}
+            onCommentVoteChange={handleUpdateCommentVote}
+            onReplyVoteChange={handleUpdateReplyVote}
+          />
+        );
+      })}
+      <InputComment
+        idToAdd={idToAdd}
+        onAddComment={handleAddComment}
+        onReplyComment={handleReplyComment}
+        currentUser={currentUser}
+        action="send"
+      />
+      {isLoading ?
+      <div className="fixed w-screen h-screen bg-black opacity-50 top-0 left-0 flex items-center justify-center">
+        <div className="animate-pulse text-white">Loading...</div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      : null}
     </main>
-  )
+  );
 }
