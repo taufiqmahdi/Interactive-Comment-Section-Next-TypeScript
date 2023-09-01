@@ -7,7 +7,8 @@ const getDate = () => {
     const year = d.getFullYear().toString()
     const today = date + " " + month + " " + year
 
-    return today
+    // return today
+    return d.toString()
 }
 
 export default getDate
