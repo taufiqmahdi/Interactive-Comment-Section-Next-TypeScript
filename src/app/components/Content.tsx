@@ -79,7 +79,7 @@ const Content = (props: ContentProps) => {
             value={editValue}
             onChange={handleChangeEditValue}
           />
-          <div className='hidden md:block'>
+          <div className='block'>
             <ActionButton updatedReplyContent={editValue} replyIdToUpdate={replyIdToUpdate} onUpdateReply={onUpdateReply} onIsEditingChange={onIsEditingChange} updatedCommentContent={editValue} commentIdToUpdate={commentIdToUpdate} onUpdateComment={onUpdateComment} idToAdd={idToAdd} currentUser={currentUser} commentValue={commentValue} onAddComment={onAddComment} action="update" />
           </div>
         </div>
